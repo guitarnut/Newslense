@@ -1,15 +1,37 @@
 axios.defaults.withCredentials = true;
 
-let loginRequiredRedirect = () => {
+const config = {
+    headers: {
+        'Content-Type': 'application/json'
+    }
+};
+
+let loginRequiredRedirect = (page) => {
+    app.loginSuccessPage = page;
     window.location.href = 'login.html';
 };
 
 let loginSuccessRedirect = () => {
-    window.location.href = 'login.html';
+    if (app.loginSuccessPage != '') {
+        window.location.href = app.loginSuccessPage;
+        app.loginSuccessPage = '';
+    } else {
+        window.location.href = 'headlines.html';
+    }
 };
 
 let serverResponseError = () => {
     window.location.href = 'error.html';
+};
+
+let loadUserProfile = () => {
+    axios.get('http://localhost:8080/api/profile')
+        .then((resp) => {
+            app.userprofile = resp.data;
+        })
+        .catch(() => {
+            loginRequiredRedirect("profile.html");
+        })
 };
 
 let loadSources = () => {
@@ -19,7 +41,7 @@ let loadSources = () => {
             app.navdata.currentSource = null;
         })
         .catch(() => {
-            loginRequiredRedirect();
+            loginRequiredRedirect("headlines.html");
         })
 };
 
@@ -38,7 +60,7 @@ let loadHeadlines = (pageNumber) => {
             };
         })
         .catch(() => {
-            loginRequiredRedirect();
+            loginRequiredRedirect("headlines.html");
         })
 };
 
@@ -57,7 +79,7 @@ let loadHeadlinesBySource = (source, page) => {
             };
         })
         .catch(() => {
-            loginRequiredRedirect();
+            loginRequiredRedirect("headlines.html");
         })
 };
 
@@ -73,7 +95,7 @@ let updateHeadlinePropertyCount = (endpoint, id, prop) => {
             }
         })
         .catch(() => {
-
+            loginRequiredRedirect("headlines.html");
         })
 };
 
@@ -89,25 +111,28 @@ let logout = () => {
 
 Vue.component('navigation-bar', {
     props: ['navdata', 'sources'],
-    template: '<nav class="navbar navbar-expand-lg navbar-light bg-light">\n' +
-    '<a class="navbar-brand"><span v-if="navdata.currentSource">{{navdata.currentSource}} </span>Headlines: {{navdata.totalHeadlines}}</a><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span>\n' +
-    '</button>\n' +
-    '<div class="collapse navbar-collapse" id="navbarSupportedContent">\n' +
-    '<ul class="navbar-nav mr-auto">\n' +
-    '<li class="nav-item">\n' +
-    '<a class="nav-link" v-on:click="viewAll">View All Headlines</a>\n' +
-    '</li>\n' +
-    '<li class="nav-item dropdown">\n' +
-    '<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sources</a>\n' +
-    '<div class="dropdown-menu" aria-labelledby="navbarDropdown">\n' +
-    '<a class="dropdown-item" v-for="source in sources" v-on:click="viewAllByThisNewsSource(source.name,0)">{{source.name}}</a>\n' +
-    '</div>\n' +
-    '</li>\n' +
-    '<li class="nav-item">\n' +
-    '<a class="nav-link" v-on:click="logout">Logout</a>\n' +
-    '</li>\n' +
-    '</ul>\n' +
-    '</div>\n' +
+    template: '<nav class="navbar navbar-expand-lg navbar-light bg-light">' +
+    '<a class="navbar-brand"><span v-if="navdata.currentSource">{{navdata.currentSource}} </span>Headlines: {{navdata.totalHeadlines}}</a><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span>' +
+    '</button>' +
+    '<div class="collapse navbar-collapse" id="navbarSupportedContent">' +
+    '<ul class="navbar-nav mr-auto">' +
+    '<li class="nav-item">' +
+    '<a class="nav-link" href="headlines.html">Headlines</a>' +
+    '</li>' +
+    '<li class="nav-item dropdown">' +
+    '<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sources</a>' +
+    '<div class="dropdown-menu" aria-labelledby="navbarDropdown">' +
+    '<a class="dropdown-item" v-for="source in sources" v-on:click="viewAllByThisNewsSource(source.name,0)">{{source.name}}</a>' +
+    '</div>' +
+    '</li>' +
+    '<li class="nav-item">' +
+    '<a class="nav-link" href="profile.html">Profile</a>' +
+    '</li>' +
+    '<li class="nav-item">' +
+    '<a class="nav-link" v-on:click="logout">Logout</a>' +
+    '</li>' +
+    '</ul>' +
+    '</div>' +
     '</nav>',
     methods: {
         viewAll: () => {
@@ -185,11 +210,62 @@ Vue.component('headline', {
     }
 });
 
+Vue.component('user', {
+    props: ['user'],
+    template: '<div class="row">' +
+    '<div class="col-md-12">' +
+    '<h4>{{user.firstname}} {{user.lastname}} ({{user.username}})</h4>' +
+    '<p>{{user.email}}<br/>' +
+    'Area Code {{user.zip}}</p>' +
+    '</div>' +
+    '<div class="col-md-6">' +
+    '<h5>Recently liked headlines</h5>' +
+    '<p v-for="headline in user.likedHeadlines">{{headline}}</p>' +
+    '</div>' +
+    '<div class="col-md-6">' +
+    '<h5>Recently viewed headlines</h5>' +
+    '<p v-for="headline in user.viewedHeadlines">{{headline}}</p>' +
+    '</div>' +
+    '</div>' +
+    '</div>',
+    methods: {},
+    beforeMount: () => {
+        loadUserProfile();
+    }
+});
+
 let app = new Vue({
     el: "#app",
+    methods: {
+        login: (a) => {
+            axios.post('//localhost:8080/api/login', app.auth, config
+            )
+                .then(() => {
+                    loginSuccessRedirect();
+                })
+                .catch(() => {
+                    loginRequiredRedirect();
+                })
+        },
+        signup: () => {
+            console.log(app.auth);
+            axios.post('//localhost:8080/api/signup', app.auth, config
+            )
+                .then(() => {
+                    loginSuccessRedirect();
+                })
+                .catch(() => {
+                    loginRequiredRedirect();
+                })
+        }
+    },
     data: {
         sources: [],
         headlines: [],
-        navdata: {}
+        currentPage: '',
+        navdata: {},
+        auth: {},
+        userprofile: {},
+        loginSuccessPage: ''
     }
 });

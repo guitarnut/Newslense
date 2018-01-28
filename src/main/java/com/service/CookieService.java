@@ -9,7 +9,7 @@ import java.util.Optional;
 @Component
 public class CookieService {
     private static final String COOKIE_NAME = "nls";
-    private static final int EXPIRY = 600;
+    private static final int EXPIRY = 60 * 60 * 24;
 
     public Cookie generateNewSessionCookie(String sessionId) {
         final Cookie cookie = new Cookie(COOKIE_NAME, sessionId);

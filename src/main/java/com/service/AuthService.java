@@ -58,18 +58,18 @@ public class AuthService {
         return beginSession(user, request, response);
     }
 
-    public boolean loginUser(HttpServletRequest request, HttpServletResponse response) {
-        if (Strings.isNullOrEmpty(request.getParameterMap().get("username")[0]) || Strings.isNullOrEmpty(request.getParameterMap().get("password")[0])) {
+    public boolean loginUser(User user, HttpServletRequest request, HttpServletResponse response) {
+        if (Strings.isNullOrEmpty(user.getUsername()) || Strings.isNullOrEmpty(user.getPassword())) {
             return false;
         }
 
-        final Optional<User> user = userService.findOne(
-            request.getParameterMap().get("username")[0],
-            request.getParameterMap().get("password")[0]
+        final Optional<User> foundUser = userService.findOne(
+            user.getUsername(),
+            user.getPassword()
         );
 
-        if(user.isPresent()) {
-            return beginSession(user.get(), request, response);
+        if(foundUser.isPresent()) {
+            return beginSession(foundUser.get(), request, response);
         } else {
             return false;
         }

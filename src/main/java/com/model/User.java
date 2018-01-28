@@ -4,6 +4,7 @@ import com.constants.UserRole;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,9 +20,11 @@ public class User {
     private String lastname;
     private String username;
     private String password;
-    private List<UserRole> roles;
-    private List<String> ip;
-    private List<String> headlines;
+    private List<UserRole> roles = new ArrayList<>();
+    private List<String> ip = new ArrayList<>();
+    private List<String> savedHeadlines = new ArrayList<>();
+    private List<String> likedHeadlines = new ArrayList<>();
+    private List<String> viewedHeadlines = new ArrayList<>();
     private int zip;
     private int enabled;
 
@@ -105,12 +108,28 @@ public class User {
         this.ip = ip;
     }
 
-    public List<String> getHeadlines() {
-        return headlines;
+    public List<String> getSavedHeadlines() {
+        return savedHeadlines;
     }
 
-    public void setHeadlines(List<String> headlines) {
-        this.headlines = headlines;
+    public void setSavedHeadlines(List<String> savedHeadlines) {
+        this.savedHeadlines = savedHeadlines;
+    }
+
+    public List<String> getLikedHeadlines() {
+        return likedHeadlines;
+    }
+
+    public void setLikedHeadlines(List<String> likedHeadlines) {
+        this.likedHeadlines = likedHeadlines;
+    }
+
+    public List<String> getViewedHeadlines() {
+        return viewedHeadlines;
+    }
+
+    public void setViewedHeadlines(List<String> viewedHeadlines) {
+        this.viewedHeadlines = viewedHeadlines;
     }
 
     @Override
@@ -124,7 +143,9 @@ public class User {
             ", password='" + password + '\'' +
             ", roles=" + roles +
             ", ip=" + ip +
-            ", headlines=" + headlines +
+            ", savedHeadlines=" + savedHeadlines +
+            ", likedHeadlines=" + likedHeadlines +
+            ", viewedHeadlines=" + viewedHeadlines +
             ", zip=" + zip +
             ", enabled=" + enabled +
             '}';

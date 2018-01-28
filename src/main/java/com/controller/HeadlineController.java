@@ -4,6 +4,7 @@ import com.constants.UserRole;
 import com.model.Headline;
 import com.service.AuthService;
 import com.service.HeadlineService;
+import com.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +23,13 @@ public class HeadlineController {
 
     private final HeadlineService headlineService;
     private final AuthService authService;
+    private final UserService userService;
 
     @Autowired
-    public HeadlineController(HeadlineService headlineService, AuthService authService) {
+    public HeadlineController(HeadlineService headlineService, AuthService authService, UserService userService) {
         this.headlineService = headlineService;
         this.authService = authService;
+        this.userService = userService;
     }
 
     @RequestMapping("/page/{page}")
@@ -55,7 +58,11 @@ public class HeadlineController {
     public void handleLike(@PathVariable("id") String id,
                            HttpServletRequest request, HttpServletResponse response) throws IOException {
         if (isAuthorized(request)) {
-            headlineService.incrementLike(id);
+            if (userService.updateLikedHeadlines(authService.getAuthorizedUser(request), id)) {
+                headlineService.incrementLike(id);
+            } else {
+                response.setStatus(204);
+            }
         } else {
             response.setStatus(401);
         }
@@ -65,7 +72,11 @@ public class HeadlineController {
     public void handleView(@PathVariable("id") String id,
                            HttpServletRequest request, HttpServletResponse response) throws IOException {
         if (isAuthorized(request)) {
-            headlineService.incrementView(id);
+            if (userService.updateViewedHeadlines(authService.getAuthorizedUser(request), id)) {
+                headlineService.incrementView(id);
+            } else {
+                response.setStatus(204);
+            }
         } else {
             response.setStatus(401);
         }

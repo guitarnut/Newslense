@@ -1,9 +1,11 @@
 package com.controller;
 
+import com.model.User;
 import com.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -25,8 +27,8 @@ public class AuthController {
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public void login(HttpServletRequest request, HttpServletResponse response) {
-        if (service.loginUser(request, response)) {
+    public void login(@RequestBody User user, HttpServletRequest request, HttpServletResponse response) {
+        if (service.loginUser(user, request, response)) {
             response.setStatus(200);
         } else {
             response.setStatus(400);
@@ -38,7 +40,7 @@ public class AuthController {
         if (service.logoutUser(request, response)) {
             response.setStatus(200);
         } else {
-            response.setStatus(400);
+            response.setStatus(401);
         }
     }
 

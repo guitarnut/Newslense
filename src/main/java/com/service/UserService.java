@@ -50,4 +50,41 @@ public class UserService {
         }
     }
 
+    public void saveUser(User user) {
+        repository.save(user);
+    }
+
+    public boolean updateLikedHeadlines(Optional<User> user, String id) {
+        if (user.isPresent()) {
+            if(!user.get().getLikedHeadlines().contains(id)) {
+                user.get().getLikedHeadlines().add(id);
+                saveUser(user.get());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean updateViewedHeadlines(Optional<User> user, String id) {
+        if (user.isPresent()) {
+            if(!user.get().getViewedHeadlines().contains(id)) {
+                user.get().getViewedHeadlines().add(id);
+                saveUser(user.get());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean updateSavedHeadlines(Optional<User> user, String id) {
+        if (user.isPresent()) {
+            if(!user.get().getSavedHeadlines().contains(id)) {
+                user.get().getSavedHeadlines().add(id);
+                saveUser(user.get());
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

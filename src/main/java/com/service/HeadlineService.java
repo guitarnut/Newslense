@@ -9,6 +9,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by guitarnut on 12/9/17.
  */
@@ -31,6 +34,17 @@ public class HeadlineService {
     public Page<Headline> getAllBySource(String source, int page) {
         String sourceName = WordUtils.capitalize(source.replaceAll("-", " "));
         return repository.findBySource(sourceName, new PageRequest(page, 25, sort));
+    }
+
+    public List<String> getAllHeadlineTitlesById(List<String> ids) {
+        final List<String> titles = new ArrayList<>();
+        ids.forEach(id->{
+            final Headline headline = repository.findOne(id);
+            if(headline != null) {
+                titles.add(headline.getHeadline());
+            }
+        });
+        return titles;
     }
 
     public void incrementLike(String id) {
